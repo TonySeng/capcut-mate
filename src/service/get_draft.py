@@ -2,16 +2,17 @@ from exceptions import CustomException, CustomError
 from src.utils.logger import logger
 from src.utils import helper
 from typing import List
+from urllib.parse import quote
 import config
 import os
 
 def gen_download_url(file_path: str) -> str:
     """
     生成下载URL，将文件路径中的/app/替换成DOWNLOAD_URL
-    
+
     Args:
         file_path: 文件路径
-    
+
     Returns:
         download_url: 下载URL
     """
@@ -23,10 +24,14 @@ def gen_download_url(file_path: str) -> str:
 
     # 将系统路径分隔符转换为URL的正斜杠
     relative_path = relative_path.replace(os.sep, "/")
-    
+
+    # 对路径做 URL 编码（保留斜杠），确保草稿名含中文、空格等字符时
+    # 生成的下载 URL 仍可被客户端/nginx 正确解析，避免 404
+    encoded_path = quote(relative_path, safe="/")
+
     # 拼接URL
     base_url = config.DOWNLOAD_URL.rstrip("/")
-    download_url = f"{base_url}/{relative_path}"
+    download_url = f"{base_url}/{encoded_path}"
     return download_url
 
 def batch_gen_download_url(file_paths: List[str]) -> List[str]:

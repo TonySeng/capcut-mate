@@ -69,11 +69,12 @@ def create_draft(cdr: CreateDraftRequest) -> CreateDraftResponse:
     """
     创建剪映草稿 (v1版本)
     """
-    
+
     # 调用service层处理业务逻辑
     draft_url = service.create_draft(
         width=cdr.width,
-        height=cdr.height
+        height=cdr.height,
+        draft_name=cdr.draft_name
     )
 
     return CreateDraftResponse(draft_url=draft_url, tip_url=config.TIP_URL)
