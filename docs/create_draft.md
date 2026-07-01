@@ -22,7 +22,8 @@ Create a Jianying draft. This interface is used to create a new Jianying draft p
 ```json
 {
   "width": 1920,
-  "height": 1080
+  "height": 1080,
+  "draft_name": "my-video-project"
 }
 ```
 
@@ -32,6 +33,7 @@ Create a Jianying draft. This interface is used to create a new Jianying draft p
 |-----------|------|----------|---------|-------------|
 | width | number | ❌ | 1920 | Video width (pixels), must be greater than or equal to 1 |
 | height | number | ❌ | 1080 | Video height (pixels), must be greater than or equal to 1 |
+| draft_name | string | ❌ | null | Custom draft name (optional). If not provided, it will be auto-generated. When provided, a timestamp will be appended to ensure uniqueness |
 
 ### Parameter Details
 
@@ -46,6 +48,14 @@ Create a Jianying draft. This interface is used to create a new Jianying draft p
   - Minimum: 1 pixel
   - Recommended common values: 1080, 720, 480
   - Supports custom sizes
+
+- **draft_name**: Custom draft name
+  - Optional parameter, auto-generated if not provided (timestamp+UUID)
+  - When provided, final format will be: `{custom_name}_{timestamp}`
+  - Special characters will be automatically sanitized (replaced with underscores)
+  - Unsafe characters include: `\ / : * ? " < > |` etc.
+  - Length limit: maximum 50 characters
+  - Example: `my-video-project` → `my-video-project_20260630143025`
 
 #### Common Resolutions
 
@@ -117,6 +127,32 @@ curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
   }'
 ```
 
+#### 4. Create Draft with Custom Name
+
+```bash
+curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
+  -H "Content-Type: application/json" \
+  -d '{
+    "width": 1920,
+    "height": 1080,
+    "draft_name": "my-video-project"
+  }'
+```
+
+#### 5. Special Characters are Automatically Sanitized
+
+```bash
+curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
+  -H "Content-Type: application/json" \
+  -d '{
+    "width": 1920,
+    "height": 1080,
+    "draft_name": "project:2024/test*video?"
+  }'
+```
+
+> Note: Special characters `: / * ?` will be automatically replaced with underscores `_`
+
 
 ## Error Code Description
 
@@ -135,6 +171,11 @@ curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
 3. **Performance Consideration**: Ultra-high resolution may affect subsequent processing performance
 4. **Storage Usage**: High-resolution drafts will occupy more storage space
 5. **URL Validity**: The returned draft_url has a certain validity period
+6. **Custom Name**:
+   - When `draft_name` is provided, the system will automatically append a timestamp to ensure uniqueness
+   - Filesystem-unsafe characters (such as `\ / : * ? " < > |`) will be automatically replaced with underscores
+   - Name length is limited to 50 characters
+   - If not provided, the system auto-generates format as `{timestamp}{UUID}`
 
 ## Workflow
 

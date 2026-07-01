@@ -22,7 +22,8 @@ POST /openapi/capcut-mate/v1/create_draft
 ```json
 {
   "width": 1920,
-  "height": 1080
+  "height": 1080,
+  "draft_name": "我的视频项目"
 }
 ```
 
@@ -32,6 +33,7 @@ POST /openapi/capcut-mate/v1/create_draft
 |--------|------|------|--------|------|
 | width | number | ❌ | 1920 | 视频宽度(像素)，必须大于等于1 |
 | height | number | ❌ | 1080 | 视频高度(像素)，必须大于等于1 |
+| draft_name | string | ❌ | null | 草稿自定义名称（可选），不提供则自动生成。提供时会在名称后添加时间戳确保唯一性 |
 
 ### 参数详解
 
@@ -46,6 +48,14 @@ POST /openapi/capcut-mate/v1/create_draft
   - 最小值：1像素
   - 建议常用值：1080、720、480
   - 支持自定义尺寸
+
+- **draft_name**: 草稿自定义名称
+  - 可选参数，不提供则自动生成（时间戳+UUID）
+  - 提供时，最终格式为：`{自定义名称}_{时间戳}`
+  - 特殊字符会被自动清理（替换为下划线）
+  - 不安全的字符包括：`\ / : * ? " < > |` 等
+  - 长度限制：最多50个字符
+  - 示例：`我的视频项目` → `我的视频项目_20260630143025`
 
 #### 常用分辨率
 
@@ -117,6 +127,32 @@ curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
   }'
 ```
 
+#### 4. 创建带自定义名称的草稿
+
+```bash
+curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
+  -H "Content-Type: application/json" \
+  -d '{
+    "width": 1920,
+    "height": 1080,
+    "draft_name": "我的视频项目"
+  }'
+```
+
+#### 5. 自定义名称会自动清理特殊字符
+
+```bash
+curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
+  -H "Content-Type: application/json" \
+  -d '{
+    "width": 1920,
+    "height": 1080,
+    "draft_name": "项目:2024/测试*视频?"
+  }'
+```
+
+> 注：特殊字符 `: / * ?` 会被自动替换为下划线 `_`
+
 
 ## 错误码说明
 
@@ -135,6 +171,11 @@ curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/create_draft \
 3. **性能考虑**: 超高分辨率可能影响后续处理性能
 4. **存储占用**: 高分辨率草稿会占用更多存储空间
 5. **URL有效期**: 返回的draft_url具有一定的有效期
+6. **自定义名称**: 
+   - 提供 `draft_name` 时，系统会自动在名称后添加时间戳确保唯一性
+   - 文件系统不安全的字符（如 `\ / : * ? " < > |`）会被自动替换为下划线
+   - 名称长度限制为50个字符
+   - 不提供时，系统自动生成格式为 `{时间戳}{UUID}`
 
 ## 工作流程
 
